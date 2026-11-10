@@ -1,0 +1,20 @@
+---
+# Elasticsearch connection details
+elasticsearch_host: "{{ lookup('env', 'ES_HOST') }}"
+elasticsearch_port: 30148
+elasticsearch_protocol: "https"
+elasticsearch_admin_user: "admin"
+elasticsearch_admin_password: "{{ lookup('env', 'ES_ADMIN_PASSWORD') }}"
+
+# Base username prefix (must match the prefix used during user creation)
+kibana_user_prefix: "kibana_user"
+
+# Role name (must match the role name used during creation)
+kibana_user_role_name: "kibana_developer"
+
+# Verify SSL certificates against the CA of IBM Cloud Databases (never disable in production)
+validate_certs: true
+elasticsearch_ca_path: "{{ role_path }}/../../ibm-cloud-databases-ca.pem"
+
+# Confirm deletion (set to false to skip confirmation prompt)
+confirm_deletion: true

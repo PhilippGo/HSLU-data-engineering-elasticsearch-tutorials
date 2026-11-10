@@ -1,0 +1,132 @@
+---
+- name: Ensure the Excel file with the Kibana credentials is configured
+  assert:
+    that:
+      - kibana_users_excel | length > 0
+    fail_msg: "kibana_users_excel is not set. Pass it with -e kibana_users_excel=/path/to/students.xlsx"
+
+- name: Read Kibana user names and passwords from Excel
+  command:
+    argv:
+      - "{{ kibana_credentials_python }}"
+      - "{{ kibana_credentials_script }}"
+      - export
+      - "{{ kibana_users_excel }}"
+      - --sheet
+      - "{{ kibana_users_sheet }}"
+      - --prefix
+      - "{{ kibana_user_prefix }}"
+  register: kibana_credentials
+  changed_when: false
+
+- name: Set Kibana users
+  set_fact:
+    kibana_users: "{{ kibana_credentials.stdout | from_json }}"
+  no_log: true
+
+- name: Create custom Kibana developer role in Elasticsearch
+  uri:
+    url: "{{ elasticsearch_protocol }}://{{ elasticsearch_host }}:{{ elasticsearch_port }}/_security/role/{{ kibana_user_role_name }}"
+    method: POST
+    user: "{{ elasticsearch_admin_user }}"
+    password: "{{ elasticsearch_admin_password }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: "{{ validate_certs }}"
+    ca_path: "{{ elasticsearch_ca_path }}"
+    status_code: [200]
+    body:
+      cluster:
+        - "monitor"
+        - "manage_index_templates"
+        - "monitor_snapshot"
+        - "manage_ilm"
+        - "manage"
+        - "manage_own_api_key"
+      indices:
+        - names: ["*"]
+          privileges:
+            - "create_index"
+            - "create"
+            - "delete"
+            - "index"
+            - "manage"
+            - "read"
+            - "write"
+            - "view_index_metadata"
+            - "monitor"
+      applications:
+        - application: "kibana-.kibana"
+          privileges:
+            - "feature_discover.all"
+            - "feature_visualize.all"
+            - "feature_dashboard.all"
+            - "feature_dev_tools.all"
+            - "feature_advancedSettings.read"
+            - "feature_indexPatterns.all"
+            - "feature_savedObjectsManagement.all"
+            - "feature_indexLifecycleManagement.all"
+          resources: ["*"]
+  register: role_creation
+  changed_when: role_creation.status == 201
+
+- name: Display role creation result
+  debug:
+    msg: "Role {{ kibana_user_role_name }} created/updated successfully"
+  when: role_creation.status in [200, 201]
+
+- name: Create Kibana users in Elasticsearch
+  uri:
+    url: "{{ elasticsearch_protocol }}://{{ elasticsearch_host }}:{{ elasticsearch_port }}/_security/user/{{ item.username }}"
+    method: POST
+    user: "{{ elasticsearch_admin_user }}"
+    password: "{{ elasticsearch_admin_password }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: "{{ validate_certs }}"
+    ca_path: "{{ elasticsearch_ca_path }}"
+    status_code: [200]
+    body:
+      password: "{{ item.password }}"
+      roles:
+        - "{{ kibana_user_role_name }}"
+      full_name: "Kibana Developer {{ item.username }}"
+      email: "{{ item.username }}@example.com"
+      enabled: true
+  loop: "{{ kibana_users }}"
+  loop_control:
+    label: "{{ item.username }}"
+  register: user_creation
+  changed_when: user_creation.status == 201
+
+- name: Display created users
+  debug:
+    msg: "{{ 'Created' if item.status == 200 }}: {{ item.item.username }}"
+  loop: "{{ user_creation.results }}"
+  loop_control:
+    label: "{{ item.item.username }}"
+  when: user_creation.results is defined
+
+- name: Summary of created users
+  debug:
+    msg:
+      - "=========================================="
+      - "Kibana Users Creation Summary"
+      - "=========================================="
+      - "Total users processed: {{ kibana_users | length }}"
+      - "Users: {{ kibana_users | map(attribute='username') | join(', ') }}"
+      - "Passwords: individual per user (see column 'Password' in the Excel file)"
+      - "Role assigned: {{ kibana_user_role_name }}"
+      - "=========================================="
+      - "Users have the following permissions:"
+      - "  - Adjust cluster settings"
+      - "  - Create and manage indices"
+      - "  - Access Kibana Dev Tools"
+      - "  - View Elasticsearch cluster health and metrics"
+      - "  - Full access to Discover, Visualize, and Dashboard"
+      - "  - Create and manage ILM policies"
+      - "  - Full access to Index Lifecycle Management UI"
+      - "  - Create and manage their own API keys"
+      - "=========================================="
+      - "IMPORTANT: Users should change their password on first login!"
+      - "=========================================="

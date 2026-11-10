@@ -1,0 +1,16 @@
+.DS_Store
+venv/
+.vscode
+solutions.md
+ansible-env
+.venv
+*.log
+.env
+
+#custom
+input.json
+input_replaced.json
+# Excel files with per-student credentials
+*.xlsx
+
+*.pem

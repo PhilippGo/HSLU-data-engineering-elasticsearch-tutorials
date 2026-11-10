@@ -1,0 +1,23 @@
+[project]
+name = "elasticsearch-tutorials"
+version = "0.1.0"
+description = "Tutorials to learn the basics of Elasticsearch"
+# ansible-core 2.21+ requires Python 3.12+
+requires-python = ">=3.12"
+dependencies = [
+    # --- Students: exercises.md (Exercise 3 and 4) -------------------------
+    # HTTP calls to Elasticsearch
+    "requests>=2.32.5",
+    # Sample web app in python/ (Exercise 4)
+    "Flask>=3.1.3",
+
+    # --- Teacher only: setup_ibm-cloud/ (create/delete Kibana users) -------
+    # Runs playbook-create.yml and playbook-delete.yml
+    "ansible-core>=2.21.6",
+    # Reads/writes the student Excel file in setup_ibm-cloud/kibana_credentials.py
+    "openpyxl>=3.1.5",
+]
+
+[tool.uv]
+# Only manages dependencies, this repository is not an installable package
+package = false

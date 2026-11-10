@@ -1,0 +1,27 @@
+---
+# Elasticsearch connection details
+elasticsearch_host: "{{ lookup('env', 'ES_HOST') }}"
+elasticsearch_port: 30148
+elasticsearch_protocol: "https"
+elasticsearch_admin_user: "admin"
+elasticsearch_admin_password: "{{ lookup('env', 'ES_ADMIN_PASSWORD') }}"
+
+# Excel workbook with the columns "Email", "Kibana User" and "Password"
+# (created with kibana_credentials.py generate). One Kibana user is created per row.
+# Pass it on the command line: -e kibana_users_excel=/path/to/students.xlsx
+kibana_users_excel: ""
+kibana_users_sheet: "Contacts"
+
+# Prefix prepended to a "Kibana User" cell that only contains a number (e.g. 3 -> kibana_user3)
+kibana_user_prefix: "kibana_user"
+
+# Helper script that reads the Excel file, run with a Python that has openpyxl installed
+kibana_credentials_script: "{{ role_path }}/../../kibana_credentials.py"
+kibana_credentials_python: "{{ ansible_playbook_python }}"
+
+# Role name for the users
+kibana_user_role_name: "kibana_developer"
+
+# Verify SSL certificates against the CA of IBM Cloud Databases (never disable in production)
+validate_certs: true
+elasticsearch_ca_path: "{{ role_path }}/../../ibm-cloud-databases-ca.pem"

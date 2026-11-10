@@ -1,0 +1,27 @@
+---
+# Example playbook for IBM Cloud Elasticsearch
+# Edit the variables in the role's default folder
+# Usage:
+#   export ES_ADMIN_PASSWORD="your-password"
+#   ansible-playbook ibm-cloud-playbook.yml -e kibana_users_excel=/path/to/students.xlsx
+
+- name: Create Kibana users
+  hosts: localhost
+  gather_facts: false
+
+  roles:
+    - kibana-users
+
+  post_tasks:
+    - name: Display connection information
+      debug:
+        msg:
+          - "=========================================="
+          - "IBM Cloud Kibana Access Information"
+          - "=========================================="
+          - "Users created: {{ kibana_users | length }}"
+          - "Users: {{ kibana_users | map(attribute='username') | join(', ') }}"
+          - "Passwords: individual per user (see column 'Password' in the Excel file)"
+          - "=========================================="
+          - "IMPORTANT: Users should change their password on first login!"
+          - "=========================================="

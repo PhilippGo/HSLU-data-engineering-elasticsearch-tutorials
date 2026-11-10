@@ -1,0 +1,21 @@
+---
+- name: Create Kibana users
+  hosts: localhost
+  gather_facts: false
+
+  roles:
+    - ansible-roles/kibana-users
+
+  post_tasks:
+    - name: Display connection information
+      debug:
+        msg:
+          - "=========================================="
+          - "IBM Cloud Kibana Access Information"
+          - "=========================================="
+          - "Users created: {{ kibana_users | length }}"
+          - "Users: {{ kibana_users | map(attribute='username') | join(', ') }}"
+          - "Passwords: individual per user (see column 'Password' in the Excel file)"
+          - "=========================================="
+          - "IMPORTANT: Users should change their password on first login!"
+          - "=========================================="

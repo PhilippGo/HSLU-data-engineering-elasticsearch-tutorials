@@ -1,0 +1,35 @@
+# elasticsearch-tutorials
+
+Tutorials to learn the basics of Elasticsearch
+
+## Overview of IBM Cloud services
+
+![architecture](./files/architecture.svg)
+
+## Python setup
+
+All Python dependencies for the exercises and the teacher setup are managed with [uv](https://docs.astral.sh/uv/) in the root [`pyproject.toml`](./pyproject.toml). [Install uv](https://docs.astral.sh/uv/getting-started/installation/), then run once in this directory:
+
+```bash
+uv sync
+```
+
+This creates a `.venv` with the pinned versions from `uv.lock` (uv downloads a suitable Python version if needed). Run scripts with `uv run`, for example `uv run python main.py`, or activate the environment (`source .venv/bin/activate`, on Windows `.venv\Scripts\activate`).
+
+## Labs
+
+- [Lab 0: Username setup](/lab-0.md)
+- [Lab 1: Setup](/lab-1.md)
+- [Lab 2: Manage Indices and Shards](/lab-2.md)
+- [Lab 3: Mapping, Indexing and Text Analysis](/lab-3.md)
+- [Lab 4: Search and Aggregation](/lab-4.md)
+
+## Exercises
+
+- [Exercises: practice your skills hands-on](/exercises.md)
+
+## Local deployment of Elasticsearch cluster
+
+To deploy Elasticsearch and its user interface Kibana locally, you can use [podman](https://podman.io/). Podman is like docker but doesn't require root provileges.
+
+Check out the instructions around [local deployment](./local-deployment).
